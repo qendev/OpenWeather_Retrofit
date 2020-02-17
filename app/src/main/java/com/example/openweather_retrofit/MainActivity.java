@@ -21,14 +21,12 @@ public class MainActivity extends AppCompatActivity {
     private EditText editText;
     private Button button;
     private TextView responseText;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         init();
     }
-
     private void init() {
         editText = findViewById(R.id.city_name);
         button = findViewById(R.id.city_click);
@@ -40,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
     private void fetchWeatherDetails() {
         //Obtain an instance of Retrofit by calling the static method.
         Retrofit retrofit = NetworkClient.getRetrofitClient();
@@ -51,30 +48,32 @@ public class MainActivity extends AppCompatActivity {
         /*
         Invoke the method corresponding to the HTTP request which will return a Call object. This Call object will used to send the actual network request with the specified parameters
         */
-        Call call = weatherAPIs.getWeatherByCity(editText.getText().toString(), "235bef5a99d6bc6193525182c409602c");
-        /*
-        This is the line which actually sends a network request. Calling enqueue() executes a call asynchronously. It has two callback listeners which will invoked on the main thread
-        */
-        call.enqueue(new Callback() {
+        Call <WResponse>  wResponseCall= weatherAPIs.getWeatherByCity(editText.getText().toString(), "235bef5a99d6bc6193525182c409602c");
+        wResponseCall.enqueue(new Callback<WResponse>() {
             @Override
-            public void onResponse(Call call, Response response) {
-                /*This is the success callback. Though the response type is JSON, with Retrofit we get the response in the form of WResponse POJO class
-                 */
-                if (response.body() != null) {
+            public void onResponse(Call<WResponse> call, Response<WResponse> response) {
+
+                if (response.raw().code()==200){
                     WResponse wResponse = response.body();
                     responseText.setText("Temp: " + wResponse.getMain().getTemp() + "\n " +
                             "Humidity: " + wResponse.getMain().getHumidity() + "\n" +
                             "Pressure: " + wResponse.getMain().getPressure());
+
                 }
+
             }
 
             @Override
-            public void onFailure(Call call, Throwable t) {
-                /*
-                Error callback
-                */
+            public void onFailure(Call<WResponse> call, Throwable t) {
+
             }
         });
+        /*
+        This is the line which actually sends a network request. Calling enqueue() executes a call asynchronously. It has two callback listeners which will invoked on the main thread
+        */
 
-    }
+
+
+
+}
 }
